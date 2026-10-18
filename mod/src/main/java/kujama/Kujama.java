@@ -8,7 +8,11 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.fabricmc.fabric.api.event.client.player.ClientPreAttackCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityFeatureRendererRegistrationCallback;
 import net.minecraft.client.CloudStatus;
+import net.minecraft.client.model.player.PlayerModel;
+import net.minecraft.client.renderer.entity.RenderLayerParent;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Options;
 import net.minecraft.core.particles.ParticleTypes;
@@ -56,15 +60,27 @@ public class Kujama implements ClientModInitializer {
         ModuleManager.register(new SettingModule<Integer>("FPS libres", Items.REDSTONE,
                 Options::framerateLimit, v -> 260).desc("Sin limite de FPS (desactiva el tope)."));
 
-        // ---- Visual: cosmeticos con particulas (solo los ves vos)
-        ModuleManager.register(new WingsModule("Alas", Items.ELYTRA, ParticleTypes.END_ROD)
-                .desc("Alas de particulas blancas. Miralas con F5."));
-        ModuleManager.register(new WingsModule("Alas de fuego", Items.BLAZE_POWDER, ParticleTypes.FLAME)
-                .desc("Alas de fuego. Miralas con F5."));
-        ModuleManager.register(new AuraModule("Aura de alma", Items.SOUL_TORCH, ParticleTypes.SOUL_FIRE_FLAME, false)
-                .desc("Espiral de fuego azul que sube a tu alrededor."));
-        ModuleManager.register(new AuraModule("Aura electrica", Items.LIGHTNING_ROD, ParticleTypes.ELECTRIC_SPARK, true)
-                .desc("Chispas electricas que salen de tu cuerpo."));
+        // ---- Visual: alas con forma real y auras retro
+        ModuleManager.register(new ModelWingsModule("Alas rojas", Items.ELYTRA, 0xB3122B, 0x3A0610)
+                .desc("Alas de murcielago, fijas al personaje. Miralas con F5."));
+        ModuleManager.register(new ModelWingsModule("Alas Kujama", Items.PHANTOM_MEMBRANE, 0x1BD96A, 0x0B3A20)
+                .desc("Alas verdes Kujama, fijas al personaje. Miralas con F5."));
+        ModuleManager.register(new RetroAuraModule("Aura retro", Items.EXPERIENCE_BOTTLE, 0x1BD96A, 0xFFE14D, 0x2EE6D6)
+                .desc("Estilo 8 bits: octogonos de pixeles que suben."));
+        ModuleManager.register(new RetroAuraModule("Retro fuego", Items.FIRE_CHARGE, 0xFF3B3B, 0xFF9F1C, 0xFFE14D)
+                .desc("Aura de 8 bits en rojo, naranja y amarillo."));
+        ModuleManager.register(new RetroAuraModule("Retro neon", Items.GLOWSTONE_DUST, 0xFF4DFF, 0x4DFFFF, 0xFFFFFF)
+                .desc("Aura de 8 bits en rosa y celeste neon."));
+
+        // Capa del jugador que dibuja las alas
+        LivingEntityFeatureRendererRegistrationCallback.EVENT.register((entityType, entityRenderer, helper, context) -> {
+            if (entityRenderer instanceof RenderLayerParent<?, ?> parent && parent.getModel() instanceof PlayerModel) {
+                @SuppressWarnings("unchecked")
+                RenderLayerParent<AvatarRenderState, PlayerModel> playerParent =
+                        (RenderLayerParent<AvatarRenderState, PlayerModel>) parent;
+                helper.register(new KujamaWingsLayer(playerParent));
+            }
+        });
 
         ModuleManager.load();
 

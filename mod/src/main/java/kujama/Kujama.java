@@ -11,6 +11,7 @@ import net.fabricmc.fabric.api.event.client.player.ClientPreAttackCallback;
 import net.minecraft.client.CloudStatus;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Options;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.item.Items;
 import net.minecraft.resources.Identifier;
 import org.lwjgl.glfw.GLFW;
@@ -54,6 +55,16 @@ public class Kujama implements ClientModInitializer {
                 Options::biomeBlendRadius, v -> 0).desc("Sin mezcla de colores entre biomas."));
         ModuleManager.register(new SettingModule<Integer>("FPS libres", Items.REDSTONE,
                 Options::framerateLimit, v -> 260).desc("Sin limite de FPS (desactiva el tope)."));
+
+        // ---- Visual: cosmeticos con particulas (solo los ves vos)
+        ModuleManager.register(new WingsModule("Alas", Items.ELYTRA, ParticleTypes.END_ROD)
+                .desc("Alas de particulas blancas. Miralas con F5."));
+        ModuleManager.register(new WingsModule("Alas de fuego", Items.BLAZE_POWDER, ParticleTypes.FLAME)
+                .desc("Alas de fuego. Miralas con F5."));
+        ModuleManager.register(new AuraModule("Aura de alma", Items.SOUL_TORCH, ParticleTypes.SOUL_FIRE_FLAME, false)
+                .desc("Espiral de fuego azul que sube a tu alrededor."));
+        ModuleManager.register(new AuraModule("Aura electrica", Items.LIGHTNING_ROD, ParticleTypes.ELECTRIC_SPARK, true)
+                .desc("Chispas electricas que salen de tu cuerpo."));
 
         ModuleManager.load();
 

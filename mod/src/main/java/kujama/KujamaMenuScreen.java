@@ -56,7 +56,7 @@ public class KujamaMenuScreen extends Screen {
         for (int i = 0; i < cats.length; i++) {
             Category c = cats[i];
             addRenderableWidget(Button.builder(Component.empty(), b -> { tab = c; rebuildWidgets(); })
-                    .bounds(chipX(i), chipsY, 80, 14).build());
+                    .bounds(chipX(i), chipsY, 74, 14).build());
         }
 
         // tarjetas
@@ -79,7 +79,7 @@ public class KujamaMenuScreen extends Screen {
                 .bounds(px + PANEL_W - PAD - bw, footerY, bw, 14).build());
     }
 
-    private int chipX(int i) { return px + PAD + i * 84; }
+    private int chipX(int i) { return px + PAD + i * 79; }
 
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float delta) {
@@ -103,8 +103,8 @@ public class KujamaMenuScreen extends Screen {
         for (int i = 0; i < cats.length; i++) {
             int x = chipX(i);
             boolean sel = cats[i] == tab;
-            g.fill(x, chipsY, x + 80, chipsY + 14, sel ? C_ACCENT : C_BTN);
-            g.drawCenteredString(font, cats[i].label, x + 40, chipsY + 3, sel ? 0xFF0B1F12 : C_MUTED);
+            g.fill(x, chipsY, x + 74, chipsY + 14, sel ? C_ACCENT : C_BTN);
+            g.drawCenteredString(font, cats[i].label, x + 37, chipsY + 3, sel ? 0xFF0B1F12 : C_MUTED);
         }
 
         // tarjetas

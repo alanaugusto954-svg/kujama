@@ -16,6 +16,11 @@ public final class ModuleManager {
     /** Pasa a true en el primer tick del cliente. */
     public static boolean started;
 
+    private static int frames;
+
+    /** Cantidad de cuadros dibujados desde que arranco el juego (para medir FPS). */
+    public static int frames() { return frames; }
+
     private ModuleManager() {}
 
     public static void register(Module m) { MODULES.add(m); }
@@ -30,6 +35,7 @@ public final class ModuleManager {
     }
 
     public static void render(GuiGraphics g) {
+        frames++;
         for (Module m : MODULES) if (m.enabled && m instanceof HudModule h) h.render(g);
     }
 

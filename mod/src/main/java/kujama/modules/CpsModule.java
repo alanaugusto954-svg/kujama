@@ -2,13 +2,14 @@ package kujama.modules;
 
 import net.minecraft.client.gui.GuiGraphics;
 import kujama.HudModule;
+import net.minecraft.world.item.Items;
 
 import java.util.ArrayDeque;
 
 public class CpsModule extends HudModule {
     private static final ArrayDeque<Long> CLICKS = new ArrayDeque<>();
 
-    public CpsModule() { super("CPS", 4, 30); }
+    public CpsModule() { super("CPS", Items.IRON_SWORD, 4, 30); }
 
     /** Se llama desde el evento de ataque (clic izquierdo). */
     public static void registerClick() {

@@ -1,6 +1,8 @@
 package kujama.modules;
 
+import kujama.Category;
 import kujama.Module;
+import net.minecraft.world.item.Items;
 import kujama.Kujama;
 
 /** Mantene la tecla de zoom (C por defecto) para acercar la vista. */
@@ -9,7 +11,7 @@ public class ZoomModule extends Module {
     private boolean zooming;
     private int previousFov;
 
-    public ZoomModule() { super("Zoom", true); }
+    public ZoomModule() { super("Zoom", Category.UTILIDAD, Items.SPYGLASS, true); }
 
     @Override
     public void onTick() {

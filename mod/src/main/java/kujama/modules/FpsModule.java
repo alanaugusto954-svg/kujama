@@ -2,12 +2,13 @@ package kujama.modules;
 
 import net.minecraft.client.gui.GuiGraphics;
 import kujama.HudModule;
+import net.minecraft.world.item.Items;
 
 public class FpsModule extends HudModule {
     private int frames, fps;
     private long last = System.currentTimeMillis();
 
-    public FpsModule() { super("FPS", 4, 18); }
+    public FpsModule() { super("FPS", Items.CLOCK, 4, 18); }
 
     @Override
     public void render(GuiGraphics g) {

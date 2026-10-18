@@ -13,12 +13,19 @@ public final class ModuleManager {
     private static final List<Module> MODULES = new ArrayList<>();
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
+    /** Pasa a true en el primer tick del cliente. */
+    public static boolean started;
+
     private ModuleManager() {}
 
     public static void register(Module m) { MODULES.add(m); }
     public static List<Module> all() { return MODULES; }
 
     public static void tick() {
+        if (!started) {
+            started = true;
+            for (Module m : MODULES) if (m.enabled) m.onEnable();
+        }
         for (Module m : MODULES) if (m.enabled) m.onTick();
     }
 
@@ -70,6 +77,7 @@ public final class ModuleManager {
     /** Al cerrar el juego: guarda y deja todo como estaba (por ejemplo, restaura el FOV). */
     public static void shutdown() {
         save();
+        if (!started) return;
         for (Module m : MODULES) if (m.enabled) m.onDisable();
     }
 }

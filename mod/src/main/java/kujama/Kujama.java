@@ -8,7 +8,11 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.fabricmc.fabric.api.event.client.player.ClientPreAttackCallback;
+import net.minecraft.client.CloudStatus;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Options;
+import net.minecraft.client.ParticleStatus;
+import net.minecraft.world.item.Items;
 import net.minecraft.resources.Identifier;
 import org.lwjgl.glfw.GLFW;
 import kujama.modules.*;
@@ -26,14 +30,32 @@ public class Kujama implements ClientModInitializer {
         zoomKey = KeyBindingHelper.registerKeyBinding(
                 new KeyMapping("key.kujama.zoom", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_C, category));
 
-        ModuleManager.register(new WatermarkModule());
-        ModuleManager.register(new FpsModule());
-        ModuleManager.register(new CpsModule());
-        ModuleManager.register(new CoordsModule());
-        ModuleManager.register(new KeystrokesModule());
-        ModuleManager.register(new ArmorModule());
-        ModuleManager.register(new SprintModule());
-        ModuleManager.register(new ZoomModule());
+        ModuleManager.register(new WatermarkModule().desc("Marca Kujama en pantalla."));
+        ModuleManager.register(new FpsModule().desc("Muestra tus FPS en pantalla."));
+        ModuleManager.register(new CpsModule().desc("Clics por segundo (clic izquierdo)."));
+        ModuleManager.register(new CoordsModule().desc("Tus coordenadas X, Y, Z."));
+        ModuleManager.register(new KeystrokesModule().desc("Muestra W A S D y espacio."));
+        ModuleManager.register(new ArmorModule().desc("Armadura y su durabilidad."));
+        ModuleManager.register(new SprintModule().desc("Corre sin mantener la tecla."));
+        ModuleManager.register(new ZoomModule().desc("Mantene C para acercar la vista."));
+        // ---- Kujama Boost: ajustes de rendimiento con un clic
+        ModuleManager.register(new SettingModule<ParticleStatus>("Particulas", Items.FIREWORK_STAR,
+                Options::particles, v -> ParticleStatus.MINIMAL).desc("Particulas al minimo: menos cosas que dibujar."));
+        ModuleManager.register(new SettingModule<CloudStatus>("Nubes", Items.SNOWBALL,
+                Options::cloudStatus, v -> CloudStatus.OFF).desc("Sin nubes: mas FPS en el cielo."));
+        ModuleManager.register(new SettingModule<Integer>("Dist. render", Items.ENDER_EYE,
+                Options::renderDistance, v -> Math.min(v, 8)).desc("Distancia de render maxima 8 chunks."));
+        ModuleManager.register(new SettingModule<Integer>("Dist. simul.", Items.REDSTONE_TORCH,
+                Options::simulationDistance, v -> Math.min(v, 6)).desc("Simulacion a 6 chunks: menos carga de CPU."));
+        ModuleManager.register(new SettingModule<Double>("Entidades", Items.ZOMBIE_HEAD,
+                Options::entityDistanceScaling, v -> Math.min(v, 0.5)).desc("Dibuja menos entidades lejanas."));
+        ModuleManager.register(new SettingModule<Boolean>("Sombras", Items.BLACK_DYE,
+                Options::entityShadows, v -> false).desc("Quita las sombras de entidades."));
+        ModuleManager.register(new SettingModule<Integer>("Mezcla biomas", Items.GRASS_BLOCK,
+                Options::biomeBlendRadius, v -> 0).desc("Sin mezcla de colores entre biomas."));
+        ModuleManager.register(new SettingModule<Integer>("FPS libres", Items.REDSTONE,
+                Options::framerateLimit, v -> 260).desc("Sin limite de FPS (desactiva el tope)."));
+
         ModuleManager.load();
 
         HudElementRegistry.attachElementAfter(
@@ -48,7 +70,7 @@ public class Kujama implements ClientModInitializer {
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (openGuiKey.consumeClick()) {
-                if (client.screen == null) client.setScreen(new ClickGuiScreen(null));
+                if (client.screen == null) client.setScreen(new KujamaMenuScreen(null));
             }
             ModuleManager.tick();
         });

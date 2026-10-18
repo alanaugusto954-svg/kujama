@@ -4,12 +4,13 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import kujama.HudModule;
+import net.minecraft.world.item.Items;
 
 public class ArmorModule extends HudModule {
     private static final EquipmentSlot[] SLOTS = {
             EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET };
 
-    public ArmorModule() { super("Armadura", 4, 124); }
+    public ArmorModule() { super("Armadura", Items.IRON_CHESTPLATE, 4, 124); }
 
     @Override
     public void render(GuiGraphics g) {

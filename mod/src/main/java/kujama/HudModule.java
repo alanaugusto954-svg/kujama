@@ -1,13 +1,14 @@
 package kujama;
 
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.world.item.Item;
 
 /** Modulo que dibuja algo en pantalla en la posicion (x, y). */
 public abstract class HudModule extends Module {
     public int x, y;
 
-    protected HudModule(String name, int x, int y) {
-        super(name, true);
+    protected HudModule(String name, Item icon, int x, int y) {
+        super(name, Category.HUD, icon, true);
         this.x = x;
         this.y = y;
     }

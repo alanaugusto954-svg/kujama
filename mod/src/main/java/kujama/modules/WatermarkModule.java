@@ -2,10 +2,11 @@ package kujama.modules;
 
 import net.minecraft.client.gui.GuiGraphics;
 import kujama.HudModule;
+import net.minecraft.world.item.Items;
 
 /** Marca de Kujama en pantalla. */
 public class WatermarkModule extends HudModule {
-    public WatermarkModule() { super("Kujama", 4, 4); }
+    public WatermarkModule() { super("Marca", Items.NETHER_STAR, 4, 4); }
 
     @Override
     public void render(GuiGraphics g) {

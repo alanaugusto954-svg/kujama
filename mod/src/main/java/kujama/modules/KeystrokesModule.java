@@ -2,9 +2,10 @@ package kujama.modules;
 
 import net.minecraft.client.gui.GuiGraphics;
 import kujama.HudModule;
+import net.minecraft.world.item.Items;
 
 public class KeystrokesModule extends HudModule {
-    public KeystrokesModule() { super("Keystrokes", 4, 58); }
+    public KeystrokesModule() { super("Keystrokes", Items.STONE_BUTTON, 4, 58); }
 
     private void key(GuiGraphics g, String label, boolean down, int dx, int dy, int w) {
         int x0 = x + dx, y0 = y + dy;

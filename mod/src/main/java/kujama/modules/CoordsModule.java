@@ -2,9 +2,10 @@ package kujama.modules;
 
 import net.minecraft.client.gui.GuiGraphics;
 import kujama.HudModule;
+import net.minecraft.world.item.Items;
 
 public class CoordsModule extends HudModule {
-    public CoordsModule() { super("Coordenadas", 4, 42); }
+    public CoordsModule() { super("Coordenadas", Items.COMPASS, 4, 42); }
 
     @Override
     public void render(GuiGraphics g) {

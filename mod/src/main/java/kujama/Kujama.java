@@ -11,7 +11,6 @@ import net.fabricmc.fabric.api.event.client.player.ClientPreAttackCallback;
 import net.minecraft.client.CloudStatus;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Options;
-import net.minecraft.client.ParticleStatus;
 import net.minecraft.world.item.Items;
 import net.minecraft.resources.Identifier;
 import org.lwjgl.glfw.GLFW;
@@ -39,8 +38,8 @@ public class Kujama implements ClientModInitializer {
         ModuleManager.register(new SprintModule().desc("Corre sin mantener la tecla."));
         ModuleManager.register(new ZoomModule().desc("Mantene C para acercar la vista."));
         // ---- Kujama Boost: ajustes de rendimiento con un clic
-        ModuleManager.register(new SettingModule<ParticleStatus>("Particulas", Items.FIREWORK_STAR,
-                Options::particles, v -> ParticleStatus.MINIMAL).desc("Particulas al minimo: menos cosas que dibujar."));
+        ModuleManager.register(new SettingModule<>("Particulas", Items.FIREWORK_STAR,
+                Options::particles, Kujama::lastConstant).desc("Particulas al minimo: menos cosas que dibujar."));
         ModuleManager.register(new SettingModule<CloudStatus>("Nubes", Items.SNOWBALL,
                 Options::cloudStatus, v -> CloudStatus.OFF).desc("Sin nubes: mas FPS en el cielo."));
         ModuleManager.register(new SettingModule<Integer>("Dist. render", Items.ENDER_EYE,
@@ -76,5 +75,11 @@ public class Kujama implements ClientModInitializer {
         });
 
         ClientLifecycleEvents.CLIENT_STOPPING.register(client -> ModuleManager.shutdown());
+    }
+
+    /** Devuelve el ultimo valor de un enum (para particulas: el nivel MINIMAL), sin depender del nombre de la clase. */
+    private static <E extends Enum<E>> E lastConstant(E value) {
+        E[] all = value.getDeclaringClass().getEnumConstants();
+        return all[all.length - 1];
     }
 }

@@ -12,9 +12,9 @@ import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.resources.Identifier;
 
 /**
- * Alas con forma real (geometria propia), pegadas a la espalda del jugador.
- * Usa la misma "capa" que usan las alas de elitros, la capa o las orejas de Deadmau5.
- * Fisica simple: las alas aletean suave y se abren mas cuanto mas rapido caminas; al agacharte se pliegan.
+ * Alas de murcielago con geometria propia, pegadas a la espalda del jugador.
+ * Membrana con 4 dedos y borde festoneado, sombreada (mas clara cerca del hombro, mas oscura en los bordes).
+ * Se animan con WingMotion: aletean, se abren, se pliegan al agacharte y se extienden al planear.
  */
 public class KujamaWingsLayer extends RenderLayer<AvatarRenderState, PlayerModel> {
     /** Alas activas ahora mismo (las pone el modulo). */
@@ -22,17 +22,30 @@ public class KujamaWingsLayer extends RenderLayer<AvatarRenderState, PlayerModel
 
     private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath(Kujama.ID, "textures/entity/wing.png");
 
-    // Contorno del ala: {distancia lateral desde la espalda, altura sobre los pies}
-    private static final double[][] OUTLINE = {
-            {0.15, 1.35}, {0.45, 1.55}, {0.80, 1.75}, {1.15, 1.90}, {1.45, 1.95}, {1.35, 1.70}, {1.45, 1.45},
-            {1.25, 1.30}, {1.30, 1.05}, {1.05, 0.95}, {1.05, 0.75}, {0.80, 0.75}, {0.65, 0.60}, {0.45, 0.80}, {0.20, 0.85}
-    };
-    // "Huesos" del ala
-    private static final double[][][] BONES = {
-            {{0.15, 1.35}, {1.45, 1.95}},
-            {{0.15, 1.35}, {1.30, 1.05}},
-            {{0.15, 1.35}, {0.80, 0.75}}
-    };
+    // Puntos del ala: {distancia lateral desde la espalda, altura sobre los pies}
+    private static final double[] S = {0.12, 1.38};                                   // hombro
+    private static final double[][] TIPS = {{1.55, 2.10}, {1.85, 1.55}, {1.50, 0.95}, {0.95, 0.55}};
+    private static final double[] B = {0.14, 0.80};                                   // union con el cuerpo
+    private static final double V0 = S[1];
+
+    // Borde de la membrana: punta, hueco, punta, hueco, punta, hueco, punta, cuerpo
+    private static final double[][] RIM = new double[8][];
+    private static final float[] SHADE = {0.85f, 0.60f, 0.85f, 0.60f, 0.85f, 0.60f, 0.85f, 1.0f};
+
+    static {
+        RIM[0] = TIPS[0];
+        RIM[2] = TIPS[1];
+        RIM[4] = TIPS[2];
+        RIM[6] = TIPS[3];
+        RIM[7] = B;
+        for (int i = 0; i < 3; i++) {
+            double mx = (TIPS[i][0] + TIPS[i + 1][0]) / 2, my = (TIPS[i][1] + TIPS[i + 1][1]) / 2;
+            RIM[1 + 2 * i] = new double[]{mx + (S[0] - mx) * 0.28, my + (S[1] - my) * 0.28}; // hueco hacia el hombro
+        }
+    }
+
+    /** Parametros de la pose del ala en este cuadro. */
+    private record Pose(double cosT, double sinT, double cosP, double sinP, double scale) {}
 
     public KujamaWingsLayer(RenderLayerParent<AvatarRenderState, PlayerModel> parent) {
         super(parent);
@@ -43,68 +56,91 @@ public class KujamaWingsLayer extends RenderLayer<AvatarRenderState, PlayerModel
                        AvatarRenderState state, float yRot, float xRot) {
         ModelWingsModule wings = current;
         Minecraft mc = Minecraft.getInstance();
-        if (wings == null || mc.player == null || state.isInvisible) return;
+        if (wings == null || mc.player == null || state.isInvisible || Safe.disabled("wings")) return;
 
         // solo para el jugador local (los demas no tienen tus alas)
         double dx = state.x - mc.player.getX(), dy = state.y - mc.player.getY(), dz = state.z - mc.player.getZ();
         if (dx * dx + dy * dy + dz * dz > 1.0) return;
 
-        float speed = Math.min(state.walkAnimationSpeed, 1.0f);
-        double flap = Math.sin(state.ageInTicks * (0.12 + speed * 0.25));
-        double openDeg = 48 + (state.isDiscrete ? 14 : 0) + flap * (3 + 22 * speed);
-        double phi = Math.toRadians(openDeg);
-        double cph = Math.cos(phi), sph = Math.sin(phi);
+        float partial = state.ageInTicks - (float) Math.floor(state.ageInTicks);
+        float phase = Anim.lerp(WingMotion.prevPhase, WingMotion.phase, partial);
+        float open = Anim.lerp(WingMotion.prevOpen, WingMotion.open, partial);
+        float amp = Anim.lerp(WingMotion.prevAmp, WingMotion.amp, partial);
+
+        double theta = Math.toRadians(amp * 34.0 * Math.sin(phase));   // aleteo arriba/abajo
+        double phi = Math.toRadians(70.0 - 40.0 * open);               // barrido hacia atras: plegada -> abierta
+        double scale = 0.55 + 0.45 * open;                             // plegada = mas chica
+        Pose pose = new Pose(Math.cos(theta), Math.sin(theta), Math.cos(phi), Math.sin(phi), scale);
         int membrane = wings.membraneRgb, bone = wings.boneRgb;
 
-        collector.submitCustomGeometry(poseStack, RenderTypes.entityCutoutNoCull(TEXTURE), (pose, buffer) -> {
-            for (int side = -1; side <= 1; side += 2) {
-                // membrana: abanico de triangulos desde el hombro
-                double[] p0 = map(OUTLINE[0], side, cph, sph, 0.0);
-                for (int i = 1; i + 1 < OUTLINE.length; i++) {
-                    double[] a = map(OUTLINE[i], side, cph, sph, 0.0);
-                    double[] b = map(OUTLINE[i + 1], side, cph, sph, 0.0);
-                    quad(pose, buffer, p0, a, b, b, membrane, light);
-                }
-                // borde del ala
-                for (int i = 0; i + 1 < OUTLINE.length; i++) {
-                    ribbon(pose, buffer, OUTLINE[i], OUTLINE[i + 1], 0.02, side, cph, sph, 0.006, bone, light);
-                }
-                // huesos
-                for (double[][] seg : BONES) {
-                    ribbon(pose, buffer, seg[0], seg[1], 0.03, side, cph, sph, 0.010, bone, light);
-                }
+        collector.submitCustomGeometry(poseStack, RenderTypes.entityCutoutNoCull(TEXTURE),
+                (p, buffer) -> Safe.run("wings", () -> drawWings(p, buffer, pose, membrane, bone, light)));
+    }
+
+    private static void drawWings(PoseStack.Pose p, VertexConsumer buf, Pose k, int membrane, int bone, int light) {
+        for (int side = -1; side <= 1; side += 2) {
+            double[] s = map(S, side, k, 0.0);
+            int cs = shade(membrane, 1.20f);
+
+            // membrana: abanico de triangulos desde el hombro
+            for (int i = 0; i + 1 < RIM.length; i++) {
+                double[] a = map(RIM[i], side, k, 0.0), b = map(RIM[i + 1], side, k, 0.0);
+                int ca = shade(membrane, SHADE[i]), cb = shade(membrane, SHADE[i + 1]);
+                quad(p, buf, s, cs, a, ca, b, cb, b, cb, light);
             }
-        });
+
+            // dedos (hueso con una pequeña curva hacia arriba)
+            for (double[] tip : TIPS) {
+                double[] mid = {(S[0] + tip[0]) / 2.0, (S[1] + tip[1]) / 2.0 + 0.10};
+                ribbon(p, buf, S, mid, 0.026, side, k, 0.010, bone, light);
+                ribbon(p, buf, mid, tip, 0.018, side, k, 0.010, bone, light);
+            }
+            // borde oscuro de la membrana
+            for (int i = 0; i + 1 < RIM.length; i++) {
+                ribbon(p, buf, RIM[i], RIM[i + 1], 0.012, side, k, 0.006, bone, light);
+            }
+            ribbon(p, buf, B, S, 0.012, side, k, 0.006, bone, light);
+        }
     }
 
-    /** Pasa un punto del ala (lateral, altura) al espacio del modelo del jugador (y hacia abajo, z hacia atras). */
-    private static double[] map(double[] p, int side, double cph, double sph, double zOff) {
-        return new double[]{side * p[0] * cph, 1.501 - p[1], 0.16 + p[0] * sph + zOff};
+    /** Punto del ala (lateral, altura) -> espacio del modelo del jugador (y hacia abajo, z hacia atras). */
+    private static double[] map(double[] pt, int side, Pose k, double zOff) {
+        double xw = pt[0] * k.scale(), yw = pt[1] - V0;
+        double xp = xw * k.cosT() - yw * k.sinT();     // aleteo: gira alrededor del eje de la espalda
+        double yp = xw * k.sinT() + yw * k.cosT();
+        return new double[]{side * xp * k.cosP(), 1.501 - (V0 + yp), 0.16 + xp * k.sinP() + zOff};
     }
 
-    private static void ribbon(PoseStack.Pose pose, VertexConsumer buffer, double[] from, double[] to, double half,
-                               int side, double cph, double sph, double zOff, int rgb, int light) {
-        double[] a = map(new double[]{from[0], from[1] - half}, side, cph, sph, zOff);
-        double[] b = map(new double[]{to[0], to[1] - half}, side, cph, sph, zOff);
-        double[] c = map(new double[]{to[0], to[1] + half}, side, cph, sph, zOff);
-        double[] d = map(new double[]{from[0], from[1] + half}, side, cph, sph, zOff);
-        quad(pose, buffer, a, b, c, d, rgb, light);
+    private static void ribbon(PoseStack.Pose p, VertexConsumer buf, double[] from, double[] to, double half,
+                               int side, Pose k, double zOff, int rgb, int light) {
+        double[] a = map(new double[]{from[0], from[1] - half}, side, k, zOff);
+        double[] b = map(new double[]{to[0], to[1] - half}, side, k, zOff);
+        double[] c = map(new double[]{to[0], to[1] + half}, side, k, zOff);
+        double[] d = map(new double[]{from[0], from[1] + half}, side, k, zOff);
+        quad(p, buf, a, rgb, b, rgb, c, rgb, d, rgb, light);
     }
 
-    private static void quad(PoseStack.Pose pose, VertexConsumer buffer,
-                             double[] a, double[] b, double[] c, double[] d, int rgb, int light) {
-        vertex(pose, buffer, a, rgb, light);
-        vertex(pose, buffer, b, rgb, light);
-        vertex(pose, buffer, c, rgb, light);
-        vertex(pose, buffer, d, rgb, light);
+    private static int shade(int rgb, float f) {
+        int r = Math.min(255, (int) (((rgb >> 16) & 255) * f));
+        int g = Math.min(255, (int) (((rgb >> 8) & 255) * f));
+        int b = Math.min(255, (int) ((rgb & 255) * f));
+        return (r << 16) | (g << 8) | b;
     }
 
-    private static void vertex(PoseStack.Pose pose, VertexConsumer buffer, double[] p, int rgb, int light) {
-        buffer.addVertex(pose, (float) p[0], (float) p[1], (float) p[2])
+    private static void quad(PoseStack.Pose p, VertexConsumer buf, double[] a, int ca, double[] b, int cb,
+                             double[] c, int cc, double[] d, int cd, int light) {
+        vertex(p, buf, a, ca, light);
+        vertex(p, buf, b, cb, light);
+        vertex(p, buf, c, cc, light);
+        vertex(p, buf, d, cd, light);
+    }
+
+    private static void vertex(PoseStack.Pose p, VertexConsumer buf, double[] pt, int rgb, int light) {
+        buf.addVertex(p, (float) pt[0], (float) pt[1], (float) pt[2])
                 .setColor((rgb >> 16) & 255, (rgb >> 8) & 255, rgb & 255, 255)
                 .setUv(0.5f, 0.5f)
                 .setOverlay(655360) // sin overlay de dano (equivale a OverlayTexture.NO_OVERLAY)
                 .setLight(light)
-                .setNormal(pose, 0f, 0f, 1f);
+                .setNormal(p, 0f, 0f, 1f);
     }
 }

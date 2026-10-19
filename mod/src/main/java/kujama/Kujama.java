@@ -8,6 +8,7 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.fabricmc.fabric.api.event.client.player.ClientPreAttackCallback;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityFeatureRendererRegistrationCallback;
 import net.minecraft.client.CloudStatus;
 import net.minecraft.client.model.player.PlayerModel;
@@ -25,6 +26,8 @@ public class Kujama implements ClientModInitializer {
     public static final String ID = "kujama";
     public static KeyMapping openGuiKey;
     public static KeyMapping zoomKey;
+    /** Momento en que entraste al mundo (lo usa la barra superior). */
+    public static volatile long sessionStartMs = System.currentTimeMillis();
 
     @Override
     public void onInitializeClient() {
@@ -35,6 +38,7 @@ public class Kujama implements ClientModInitializer {
                 new KeyMapping("key.kujama.zoom", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_C, category));
 
         ModuleManager.register(new WatermarkModule().desc("Marca Kujama en pantalla."));
+        ModuleManager.register(new PillModule().desc("Barra superior: nombre, FPS y tiempo de sesion."));
         ModuleManager.register(new FpsModule().desc("Muestra tus FPS en pantalla."));
         ModuleManager.register(new CpsModule().desc("Clics por segundo (clic izquierdo)."));
         ModuleManager.register(new CoordsModule().desc("Tus coordenadas X, Y, Z."));
@@ -82,6 +86,12 @@ public class Kujama implements ClientModInitializer {
             }
         });
 
+        // ---- Intro cinematica
+        ModuleManager.register(new FlagModule("Intro", Items.FILLED_MAP, Category.VISUAL, true)
+                .desc("Intro con camara orbitando al entrar al mundo."));
+        ModuleManager.register(new FlagModule("Intro 1 vez", Items.REPEATER, Category.VISUAL, true)
+                .desc("Mostrar la intro solo una vez por sesion de juego."));
+
         ModuleManager.load();
 
         HudElementRegistry.attachElementAfter(
@@ -94,7 +104,15 @@ public class Kujama implements ClientModInitializer {
             return false; // no cancela el ataque
         });
 
+        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
+            sessionStartMs = System.currentTimeMillis();
+            IntroController.onJoin();
+        });
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> IntroController.onDisconnect());
+
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            WingMotion.tick(client);
+            IntroController.tick(client);
             while (openGuiKey.consumeClick()) {
                 if (client.screen == null) client.setScreen(new KujamaMenuScreen(null));
             }

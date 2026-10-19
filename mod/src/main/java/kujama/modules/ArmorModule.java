@@ -21,5 +21,6 @@ public class ArmorModule extends HudModule {
             g.renderItem(s, x, y + i * 18);
             if (s.getMaxDamage() > 0) text(g, String.valueOf(s.getMaxDamage() - s.getDamageValue()), 20, i * 18 + 4);
         }
+        track(0, 0, 44, 72);
     }
 }

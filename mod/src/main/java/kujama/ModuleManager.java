@@ -26,17 +26,33 @@ public final class ModuleManager {
     public static void register(Module m) { MODULES.add(m); }
     public static List<Module> all() { return MODULES; }
 
+    /** Busca un modulo por su nombre (o null). */
+    public static Module find(String name) {
+        for (Module m : MODULES) if (m.name.equals(name)) return m;
+        return null;
+    }
+
+    public static boolean isOn(String name) {
+        Module m = find(name);
+        return m != null && m.enabled;
+    }
+
     public static void tick() {
         if (!started) {
             started = true;
             for (Module m : MODULES) if (m.enabled) m.onEnable();
         }
-        for (Module m : MODULES) if (m.enabled) m.onTick();
+        for (Module m : MODULES) if (m.enabled) Safe.run("tick:" + m.name, m::onTick);
     }
 
     public static void render(GuiGraphics g) {
         frames++;
-        for (Module m : MODULES) if (m.enabled && m instanceof HudModule h) h.render(g);
+        for (Module m : MODULES) {
+            if (m.enabled && m instanceof HudModule h) {
+                h.beginFrame();
+                Safe.run("hud:" + h.name, () -> h.render(g));
+            }
+        }
     }
 
     private static Path path() {

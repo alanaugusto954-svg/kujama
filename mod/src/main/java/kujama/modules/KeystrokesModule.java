@@ -21,5 +21,6 @@ public class KeystrokesModule extends HudModule {
         key(g, "S", mc.options.keyDown.isDown(), 20, 20, 18);
         key(g, "D", mc.options.keyRight.isDown(), 40, 20, 18);
         key(g, "SPACE", mc.options.keyJump.isDown(), 0, 40, 58);
+        track(0, 0, 58, 58);
     }
 }

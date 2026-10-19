@@ -1,0 +1,19 @@
+{
+  "kujama09.menu.minecraft_settings": "Ajustes de Minecraft",
+  "kujama09.menu.settings": "Ajustes de KUJAMA09",
+  "kujama09.menu.mods": "Mods",
+  "kujama09.intro.skip": "Pulsa ESC para omitir",
+  "kujama09.settings.title": "Ajustes de KUJAMA09",
+  "kujama09.settings.intro": "Intro",
+  "kujama09.settings.intro_duration": "Duración de la intro: %s s",
+  "kujama09.settings.particles": "Partículas",
+  "kujama09.settings.intro_sound": "Sonido de intro",
+  "kujama09.settings.menu_sounds": "Sonidos del menú",
+  "kujama09.settings.intensity": "Intensidad de animaciones: %s%%",
+  "kujama09.settings.quality": "Calidad de efectos",
+  "kujama09.settings.reset": "Restaurar valores",
+  "kujama09.settings.preview": "Ver intro",
+  "kujama09.quality.low": "Baja",
+  "kujama09.quality.medium": "Media",
+  "kujama09.quality.high": "Alta"
+}

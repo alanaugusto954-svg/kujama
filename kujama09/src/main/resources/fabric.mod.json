@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "kujama09",
+  "version": "${version}",
+  "name": "kujama09",
+  "description": "Intro cinematica al iniciar Minecraft y menu principal personalizado.",
+  "authors": [
+    "kujama09"
+  ],
+  "license": "All-Rights-Reserved",
+  "icon": "assets/kujama09/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.kujama09.Kujama09Client"
+    ]
+  },
+  "mixins": [
+    {
+      "config": "kujama09.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "fabric-api": "*"
+  },
+  "suggests": {
+    "modmenu": "*"
+  }
+}

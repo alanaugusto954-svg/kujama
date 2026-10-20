@@ -23,14 +23,14 @@ public class KujamaWingsLayer extends RenderLayer<AvatarRenderState, PlayerModel
     private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath(Kujama.ID, "textures/entity/wing.png");
 
     // Puntos del ala: {distancia lateral desde la espalda, altura sobre los pies}
-    private static final double[] S = {0.12, 1.38};                                   // hombro
-    private static final double[][] TIPS = {{1.55, 2.10}, {1.85, 1.55}, {1.50, 0.95}, {0.95, 0.55}};
-    private static final double[] B = {0.14, 0.80};                                   // union con el cuerpo
-    private static final double V0 = S[1];
+    static final double[] S = {0.12, 1.38};                                   // hombro
+    static final double[][] TIPS = {{1.55, 2.10}, {1.85, 1.55}, {1.50, 0.95}, {0.95, 0.55}};
+    static final double[] B = {0.14, 0.80};                                   // union con el cuerpo
+    static final double V0 = S[1];
 
     // Borde de la membrana: punta, hueco, punta, hueco, punta, hueco, punta, cuerpo
-    private static final double[][] RIM = new double[8][];
-    private static final float[] SHADE = {0.85f, 0.60f, 0.85f, 0.60f, 0.85f, 0.60f, 0.85f, 1.0f};
+    static final double[][] RIM = new double[8][];
+    static final float[] SHADE = {0.85f, 0.60f, 0.85f, 0.60f, 0.85f, 0.60f, 0.85f, 1.0f};
 
     static {
         RIM[0] = TIPS[0];

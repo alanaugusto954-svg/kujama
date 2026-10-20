@@ -91,6 +91,10 @@ public class Kujama implements ClientModInitializer {
                 .desc("Intro con camara orbitando al entrar al mundo."));
         ModuleManager.register(new FlagModule("Intro 1 vez", Items.REPEATER, Category.VISUAL, true)
                 .desc("Mostrar la intro solo una vez por sesion de juego."));
+        ModuleManager.register(new FlagModule("Intro de inicio", Items.CLOCK, Category.VISUAL, true)
+                .desc("Intro al abrir Minecraft, antes del menu principal."));
+        ModuleManager.register(new FlagModule("Menu principal", Items.BOOK, Category.VISUAL, true)
+                .desc("Menu principal oscuro de Kujama (apagalo para usar el original)."));
 
         ModuleManager.load();
 
@@ -113,6 +117,7 @@ public class Kujama implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             WingMotion.tick(client);
             IntroController.tick(client);
+            TitleController.tick(client);
             while (openGuiKey.consumeClick()) {
                 if (client.screen == null) client.setScreen(new KujamaMenuScreen(null));
             }

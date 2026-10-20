@@ -2,7 +2,10 @@ package kujama;
 
 import net.minecraft.client.gui.GuiGraphics;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /** Dibujo 2D sin texturas: rectangulos redondeados y letras de pixeles (estilo retro). */
@@ -46,5 +49,60 @@ public final class Draw {
                 }
             }
         }
+    }
+
+    /** Tramos horizontales {y, x1, x2} que cubren un poligono (relleno por lineas de barrido). */
+    public static List<int[]> scanlineSpans(double[][] pts) {
+        List<int[]> out = new ArrayList<>();
+        if (pts.length < 3) return out;
+        double minY = Double.MAX_VALUE, maxY = -Double.MAX_VALUE;
+        for (double[] p : pts) {
+            minY = Math.min(minY, p[1]);
+            maxY = Math.max(maxY, p[1]);
+        }
+        double[] xs = new double[pts.length];
+        for (int y = (int) Math.floor(minY); y < (int) Math.ceil(maxY); y++) {
+            double sy = y + 0.5;
+            int n = 0;
+            for (int i = 0; i < pts.length; i++) {
+                double[] a = pts[i], b = pts[(i + 1) % pts.length];
+                if ((a[1] <= sy && b[1] > sy) || (b[1] <= sy && a[1] > sy)) {
+                    xs[n++] = a[0] + (sy - a[1]) / (b[1] - a[1]) * (b[0] - a[0]);
+                }
+            }
+            Arrays.sort(xs, 0, n);
+            for (int i = 0; i + 1 < n; i += 2) {
+                int x1 = (int) Math.round(xs[i]), x2 = (int) Math.round(xs[i + 1]);
+                if (x2 > x1) out.add(new int[]{y, x1, x2});
+            }
+        }
+        return out;
+    }
+
+    public static void polygon(GuiGraphics g, double[][] pts, int color) {
+        for (int[] sp : scanlineSpans(pts)) g.fill(sp[1], sp[0], sp[2], sp[0] + 1, color);
+    }
+
+    public static void line(GuiGraphics g, double x1, double y1, double x2, double y2, int thick, int color) {
+        double dx = x2 - x1, dy = y2 - y1;
+        int steps = (int) Math.max(1, Math.ceil(Math.hypot(dx, dy)));
+        int hl = thick / 2;
+        for (int i = 0; i <= steps; i++) {
+            double t = i / (double) steps;
+            int x = (int) Math.round(x1 + dx * t), y = (int) Math.round(y1 + dy * t);
+            g.fill(x - hl, y - hl, x - hl + thick, y - hl + thick, color);
+        }
+    }
+
+    /** Logo de Kujama: cuadrado verde redondeado con una K de pixeles. */
+    public static void logo(GuiGraphics g, int x, int y, int size, float alpha) {
+        roundRect(g, x, y, size, size, Math.max(2, size / 4), Anim.alpha(0xFF1BD96A, alpha));
+        int px = Math.max(1, size / 9);
+        pixelGlyph(g, 'K', x + (size - 5 * px) / 2, y + (size - 7 * px) / 2, px, Anim.alpha(0xFF0B1F12, alpha));
+    }
+
+    /** Circulo relleno (rectangulo redondeado con radio maximo). */
+    public static void circle(GuiGraphics g, int cx, int cy, int r, int color) {
+        roundRect(g, cx - r, cy - r, r * 2, r * 2, r, color);
     }
 }

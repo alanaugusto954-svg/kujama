@@ -51,9 +51,8 @@ public final class KujamaSettingsScreen extends Screen {
                 (button, value) -> config.particles = value));
 
         this.addDrawableChild(CyclingButtonWidget.<KujamaConfig.Quality>builder(
-                        q -> Text.translatable(q.translationKey))
+                        q -> Text.translatable(q.translationKey), config.quality)
                 .values(KujamaConfig.Quality.values())
-                .initially(config.quality)
                 .build(leftX, y0 + 3 * ROW_STEP, COL_W, ROW_H, Text.translatable("kujama09.settings.quality"),
                         (button, value) -> config.quality = value));
 

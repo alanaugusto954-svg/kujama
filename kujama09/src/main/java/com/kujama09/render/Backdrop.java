@@ -1,11 +1,12 @@
 package com.kujama09.render;
 
+import com.kujama09.anim.Colors;
 import com.kujama09.anim.ParticleField;
 import com.kujama09.config.KujamaConfig;
-import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
+import org.joml.Matrix3x2fStack;
 
 /**
  * Dibujo del escenario compartido por la intro, el menú y los ajustes. Las texturas se declaran como
@@ -36,18 +37,18 @@ public final class Backdrop {
      */
     public static void drawScene(DrawContext context, int width, int height, float time, float zoom,
                                  float intensity, KujamaConfig.Quality quality, boolean clouds) {
-        MatrixStack matrices = context.getMatrices();
-        matrices.push();
+        Matrix3x2fStack matrices = context.getMatrices();
+        matrices.pushMatrix();
         if (zoom != 1f) {
-            matrices.translate(width / 2f, height / 2f, 0f);
-            matrices.scale(zoom, zoom, 1f);
-            matrices.translate(-width / 2f, -height / 2f, 0f);
+            matrices.translate(width / 2f, height / 2f);
+            matrices.scale(zoom, zoom);
+            matrices.translate(-width / 2f, -height / 2f);
         }
         drawCover(context, width, height);
         if (clouds && quality != KujamaConfig.Quality.LOW) {
             drawClouds(context, width, height, time, intensity);
         }
-        matrices.pop();
+        matrices.popMatrix();
 
         // Viñeta suave para que los botones y el logotipo destaquen.
         context.fillGradient(0, 0, width, height / 4, 0x40000000, 0x00000000);
@@ -73,8 +74,8 @@ public final class Backdrop {
             u = (BG_W - regionW) / 2;
             v = 0;
         }
-        context.drawTexture(BACKGROUND, 0, 0, width, height, (float) u, (float) v,
-                regionW, regionH, BG_W, BG_H);
+        context.drawTexture(RenderPipelines.GUI_TEXTURED, BACKGROUND, 0, 0, (float) u, (float) v,
+                width, height, regionW, regionH, BG_W, BG_H);
     }
 
     private static void drawClouds(DrawContext context, int width, int height, float time, float intensity) {
@@ -82,14 +83,12 @@ public final class Backdrop {
         int cw = ch * (CLOUDS_W / CLOUDS_H);
         int y = Math.round(height * 0.02f);
         float offset = (time * 8f * intensity) % cw;
+        int tint = Colors.withAlpha(Colors.WHITE, 0.92f);
 
-        RenderSystem.enableBlend();
-        context.setShaderColor(1f, 1f, 1f, 0.92f);
         for (float x = -offset; x < width; x += cw) {
-            context.drawTexture(CLOUDS, Math.round(x), y, cw + 1, ch, 0f, 0f,
-                    CLOUDS_W, CLOUDS_H, CLOUDS_W, CLOUDS_H);
+            context.drawTexture(RenderPipelines.GUI_TEXTURED, CLOUDS, Math.round(x), y, 0f, 0f,
+                    cw + 1, ch, CLOUDS_W, CLOUDS_H, CLOUDS_W, CLOUDS_H, tint);
         }
-        context.setShaderColor(1f, 1f, 1f, 1f);
     }
 
     /** Partículas encima del escenario (si están activadas en la configuración). */
@@ -115,10 +114,7 @@ public final class Backdrop {
             context.fill(shadowCx - w, shadowY + i, shadowCx + w, shadowY + i + 1, col);
         }
 
-        RenderSystem.enableBlend();
-        context.setShaderColor(1f, 1f, 1f, alpha);
-        context.drawTexture(MASCOT, x, y, size, size, 0f, 0f,
-                MASCOT_SIZE, MASCOT_SIZE, MASCOT_SIZE, MASCOT_SIZE);
-        context.setShaderColor(1f, 1f, 1f, 1f);
+        context.drawTexture(RenderPipelines.GUI_TEXTURED, MASCOT, x, y, 0f, 0f, size, size,
+                MASCOT_SIZE, MASCOT_SIZE, MASCOT_SIZE, MASCOT_SIZE, Colors.withAlpha(Colors.WHITE, alpha));
     }
 }

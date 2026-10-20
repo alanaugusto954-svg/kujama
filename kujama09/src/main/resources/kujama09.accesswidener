@@ -1,0 +1,4 @@
+accessWidener v2 named
+
+# Necesario para respetar la opcion "no volver a mostrar" del aviso de multijugador.
+accessible field net/minecraft/client/option/GameOptions skipMultiplayerWarning Z

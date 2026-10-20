@@ -1,17 +1,16 @@
 # kujama09
 
-Cliente personalizado para **Minecraft Java Edition 1.21.1** (mod de Fabric, solo cliente): intro
+Cliente personalizado para **Minecraft Java Edition 1.21.11** (mod de Fabric, solo cliente): intro
 cinematográfica al iniciar el juego y menú principal totalmente rediseñado.
 
 > **Estado de compilación:** este proyecto se escribió sin poder compilarlo (el entorno donde se creó
 > no tiene acceso a `maven.fabricmc.net`). No hay JAR incluido. Compilalo en tu PC con los pasos de abajo.
-> Las APIs usadas son las de Yarn `1.21.1+build.3` / Fabric API `0.102.0+1.21.1`; si algún import
+> Las firmas de la API (DrawContext con RenderPipelines, KeyInput, ClickableWidget, etc.) se verificaron contra el Javadoc de Yarn `1.21.11+build.4`; si algún import
 > falla en tu entorno, el error de Gradle indica exactamente cuál.
 
 ## Por qué estas versiones
 
-- **Minecraft 1.21.1**: versión estable con soporte maduro de Fabric y Fabric API.
-- **Java 21**, **Fabric Loader 0.16.5**, **Fabric API 0.102.0+1.21.1**, **Loom 1.7**, **Gradle 8.10.2** (wrapper incluido).
+- **Minecraft 1.21.11** (la versión que usás), **Java 21**, **Fabric Loader 0.19.5**, **Fabric API 0.141.6+1.21.11**, **Loom 1.18**, **Yarn 1.21.11+build.6**, **Gradle 9.5.1** (wrapper incluido).
 
 ## Compilar (IntelliJ IDEA o terminal)
 
@@ -28,8 +27,8 @@ Para probarlo sin instalar nada: ejecutá la tarea Gradle `runClient`.
 
 ## Instalar
 
-1. Instalá [Fabric Loader](https://fabricmc.net/use/installer/) para 1.21.1 desde tu launcher habitual.
-2. Copiá **Fabric API** (`fabric-api-0.102.0+1.21.1.jar`, de Modrinth o CurseForge) y `kujama09-1.0.0.jar` a la carpeta `mods` de tu instancia.
+1. Instalá [Fabric Loader](https://fabricmc.net/use/installer/) para 1.21.11 desde tu launcher habitual.
+2. Copiá **Fabric API** (`fabric-api-0.141.6+1.21.11.jar`, de Modrinth o CurseForge) y `kujama09-1.0.0.jar` a la carpeta `mods` de tu instancia.
 3. Abrí Minecraft con el perfil de Fabric.
 
 No es un programa aparte ni un `.exe`: es un mod `.jar` que se carga dentro de tu Minecraft.

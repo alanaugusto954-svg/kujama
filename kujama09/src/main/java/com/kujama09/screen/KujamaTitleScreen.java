@@ -19,7 +19,6 @@ import net.minecraft.client.gui.screen.option.LanguageOptionsScreen;
 import net.minecraft.client.gui.screen.option.OptionsScreen;
 import net.minecraft.client.gui.screen.world.SelectWorldScreen;
 import net.minecraft.client.gui.tooltip.Tooltip;
-import net.minecraft.client.gui.widget.PressableTextWidget;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
@@ -90,19 +89,19 @@ public final class KujamaTitleScreen extends Screen {
         final long step = 70L * MS;
 
         this.addDrawableChild(new KujamaButton(left, y, bw, bh, Text.translatable("menu.singleplayer"),
-                b -> this.client.setScreen(new SelectWorldScreen(this)), openNanos + delay));
+                () -> this.client.setScreen(new SelectWorldScreen(this)), openNanos + delay));
         y += bh + gap;
         delay += step;
 
         KujamaButton multiplayer = this.addDrawableChild(new KujamaButton(left, y, bw, bh,
-                Text.translatable("menu.multiplayer"), b -> openMultiplayer(), openNanos + delay));
+                Text.translatable("menu.multiplayer"), () -> openMultiplayer(), openNanos + delay));
         multiplayer.active = this.client.isMultiplayerEnabled();
         y += bh + gap;
         delay += step;
 
         if (showMods) {
             this.addDrawableChild(new KujamaButton(left, y, bw, bh, Text.translatable("kujama09.menu.mods"),
-                    b -> openModMenu(), openNanos + delay));
+                    () -> openModMenu(), openNanos + delay));
             y += bh + gap;
             delay += step;
         }
@@ -111,34 +110,34 @@ public final class KujamaTitleScreen extends Screen {
         int icon = bh;
         KujamaButton language = this.addDrawableChild(new KujamaButton(left, y, icon, bh,
                 Text.translatable("narrator.button.language"), LANGUAGE_ICON,
-                b -> this.client.setScreen(new LanguageOptionsScreen(this, this.client.options,
+                () -> this.client.setScreen(new LanguageOptionsScreen(this, this.client.options,
                         this.client.getLanguageManager())), openNanos + delay));
         language.setTooltip(Tooltip.of(Text.translatable("narrator.button.language")));
         this.addDrawableChild(new KujamaButton(left + icon + gap, y, bw - 2 * (icon + gap), bh,
                 Text.translatable("kujama09.menu.minecraft_settings"),
-                b -> this.client.setScreen(new OptionsScreen(this, this.client.options)), openNanos + delay));
+                () -> this.client.setScreen(new OptionsScreen(this, this.client.options)), openNanos + delay));
         KujamaButton accessibility = this.addDrawableChild(new KujamaButton(left + bw - icon, y, icon, bh,
                 Text.translatable("narrator.button.accessibility"), ACCESSIBILITY_ICON,
-                b -> this.client.setScreen(new AccessibilityOptionsScreen(this, this.client.options)),
+                () -> this.client.setScreen(new AccessibilityOptionsScreen(this, this.client.options)),
                 openNanos + delay));
         accessibility.setTooltip(Tooltip.of(Text.translatable("narrator.button.accessibility")));
         y += bh + gap;
         delay += step;
 
         this.addDrawableChild(new KujamaButton(left, y, bw, bh, Text.translatable("kujama09.menu.settings"),
-                b -> this.client.setScreen(new KujamaSettingsScreen(this)), openNanos + delay));
+                () -> this.client.setScreen(new KujamaSettingsScreen(this)), openNanos + delay));
         y += bh + gap;
         delay += step;
 
         this.addDrawableChild(new KujamaButton(left, y, bw, bh, Text.translatable("menu.quit"),
-                b -> this.client.scheduleStop(), openNanos + delay));
+                () -> this.client.scheduleStop(), openNanos + delay));
 
         // Aviso legal: abre la pantalla oficial de créditos y atribuciones, igual que vanilla.
         Text credits = Text.translatable("title.credits");
-        int creditsWidth = this.textRenderer.getWidth(credits);
-        this.addDrawableChild(new PressableTextWidget(this.width - creditsWidth - 2, this.height - 10,
-                creditsWidth, 10, credits,
-                b -> this.client.setScreen(new CreditsAndAttributionScreen(this)), this.textRenderer));
+        int creditsWidth = this.textRenderer.getWidth(credits) + 8;
+        this.addDrawableChild(new KujamaButton(this.width - creditsWidth - 2, this.height - 14,
+                creditsWidth, 12, credits,
+                () -> this.client.setScreen(new CreditsAndAttributionScreen(this)), openNanos));
 
         // Posición de la mascota (a la izquierda de la columna de botones).
         mascotSize = Math.min(Math.round(this.height * 0.66f), Math.round(this.width * 0.34f));

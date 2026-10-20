@@ -11,7 +11,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
-import org.lwjgl.glfw.GLFW;
+import net.minecraft.client.input.KeyInput;
 
 /**
  * Intro cinematográfica. Se muestra como una Screen normal, por lo que corre en el hilo de render
@@ -43,14 +43,14 @@ public final class IntroScreen extends Screen {
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+    public boolean keyPressed(KeyInput input) {
+        if (input.isEscape()) {
             if (skipNanos < 0L) {
                 skipNanos = System.nanoTime();
             }
             return true;
         }
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(input);
     }
 
     /** Todo se dibuja en render(); se evita el fondo borroso/menú de vanilla. */
@@ -151,7 +151,7 @@ public final class IntroScreen extends Screen {
         // --- Sonido opcional (desactivado por defecto) ---
         if (config.introSound && !soundPlayed && started && p >= 0.12f && this.client != null) {
             soundPlayed = true;
-            this.client.getSoundManager().play(PositionedSoundInstance.master(SoundEvents.ENTITY_PLAYER_LEVELUP, 1.0f, 0.6f));
+            this.client.getSoundManager().play(PositionedSoundInstance.ui(SoundEvents.ENTITY_PLAYER_LEVELUP, 0.6f, 1.0f));
         }
     }
 

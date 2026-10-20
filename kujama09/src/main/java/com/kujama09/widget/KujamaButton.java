@@ -3,42 +3,54 @@ package com.kujama09.widget;
 import com.kujama09.anim.Colors;
 import com.kujama09.anim.Easing;
 import com.kujama09.config.KujamaConfig;
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gl.RenderPipelines;
+import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
+import net.minecraft.client.gui.screen.narration.NarrationPart;
+import net.minecraft.client.gui.widget.ClickableWidget;
+import net.minecraft.client.input.KeyInput;
 import net.minecraft.client.sound.SoundManager;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
 /**
- * Botón funcional (es un ButtonWidget real: foco por teclado, narrador, tooltip y clic) con apariencia
+ * Botón funcional (hereda de ClickableWidget: foco por teclado, narrador, tooltip y clic) con apariencia
  * propia: entrada deslizante escalonada, transición suave de color al pasar el cursor y desplazamiento.
  * Las transiciones usan el tiempo real transcurrido, no el número de fotogramas.
  */
-public final class KujamaButton extends ButtonWidget {
+public final class KujamaButton extends ClickableWidget {
     private static final int ICON_SIZE = 15;
 
+    /** Acción al pulsar el botón. */
+    @FunctionalInterface
+    public interface Action {
+        void run();
+    }
+
+    private final Action action;
     private final long showAtNanos;
     private final Identifier icon;
     private float hover;
     private long lastNanos;
 
-    public KujamaButton(int x, int y, int width, int height, Text message, PressAction onPress, long showAtNanos) {
-        this(x, y, width, height, message, null, onPress, showAtNanos);
+    public KujamaButton(int x, int y, int width, int height, Text message, Action action, long showAtNanos) {
+        this(x, y, width, height, message, null, action, showAtNanos);
     }
 
-    /** Botón cuadrado con un sprite de GUI de vanilla en lugar de texto (el texto se usa para el narrador). */
+    /** Botón con un sprite de GUI de vanilla en lugar de texto (el texto se usa para el narrador). */
     public KujamaButton(int x, int y, int width, int height, Text message, Identifier icon,
-                        PressAction onPress, long showAtNanos) {
-        super(x, y, width, height, message, onPress, DEFAULT_NARRATION_SUPPLIER);
+                        Action action, long showAtNanos) {
+        super(x, y, width, height, message);
+        this.action = action;
         this.icon = icon;
         this.showAtNanos = showAtNanos;
     }
 
     @Override
-    public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
+    protected void renderWidget(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
         KujamaConfig config = KujamaConfig.get();
         float intensity = config.animationIntensity;
         boolean animate = intensity > 0.01f;
@@ -86,10 +98,8 @@ public final class KujamaButton extends ButtonWidget {
         context.fill(x + 2, y + 2, x + w - 2, y + 3, Colors.withAlpha(0x40FFFFFF, appear));
 
         if (icon != null) {
-            RenderSystem.enableBlend();
-            context.setShaderColor(1f, 1f, 1f, appear * (this.active ? 1f : 0.5f));
-            context.drawGuiTexture(icon, x + (w - ICON_SIZE) / 2, y + (h - ICON_SIZE) / 2, ICON_SIZE, ICON_SIZE);
-            context.setShaderColor(1f, 1f, 1f, 1f);
+            context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, icon, x + (w - ICON_SIZE) / 2,
+                    y + (h - ICON_SIZE) / 2, ICON_SIZE, ICON_SIZE, appear * (this.active ? 1f : 0.5f));
             return;
         }
 
@@ -99,6 +109,29 @@ public final class KujamaButton extends ButtonWidget {
         int textWidth = textRenderer.getWidth(message);
         context.drawText(textRenderer, message, x + (w - textWidth) / 2, y + (h - 8) / 2,
                 Colors.withAlpha(textColor, appear), hover < 0.5f);
+    }
+
+    @Override
+    public void onClick(Click click, boolean doubled) {
+        action.run();
+    }
+
+    @Override
+    public boolean keyPressed(KeyInput input) {
+        if (!this.active || !this.visible) {
+            return false;
+        }
+        if (input.isEnterOrSpace()) {
+            this.playDownSound(MinecraftClient.getInstance().getSoundManager());
+            action.run();
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    protected void appendClickableNarrations(NarrationMessageBuilder builder) {
+        builder.put(NarrationPart.TITLE, this.getNarrationMessage());
     }
 
     @Override

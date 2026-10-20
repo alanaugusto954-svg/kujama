@@ -4,9 +4,9 @@ import com.kujama09.anim.Colors;
 import com.kujama09.anim.Easing;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import org.joml.Matrix3x2fStack;
 
 /**
  * Logotipo "kujama09" (siempre en minúsculas) dibujado como texto escalado en capas:
@@ -87,11 +87,11 @@ public final class LogoRenderer {
         if ((color >>> 24) < 5) {
             return;
         }
-        MatrixStack matrices = context.getMatrices();
-        matrices.push();
-        matrices.translate(left + dx * scale, top + dy * scale, 0f);
-        matrices.scale(scale, scale, 1f);
+        Matrix3x2fStack matrices = context.getMatrices();
+        matrices.pushMatrix();
+        matrices.translate(left + dx * scale, top + dy * scale);
+        matrices.scale(scale, scale);
         context.drawText(textRenderer, LOGO, 0, 0, color, false);
-        matrices.pop();
+        matrices.popMatrix();
     }
 }

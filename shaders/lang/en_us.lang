@@ -1,0 +1,10 @@
+option.SKY_STYLE=Sky style
+value.SKY_STYLE.0=Vanilla
+value.SKY_STYLE.1=Aurora
+value.SKY_STYLE.2=Purple storm
+value.SKY_STYLE.3=Fire
+option.SKY_INTENSITY=Intensity
+option.LIGHTNING_RATE=Lightning frequency
+option.WORLD_FLASH=Lightning lights the world
+value.WORLD_FLASH.0=Off
+value.WORLD_FLASH.1=On

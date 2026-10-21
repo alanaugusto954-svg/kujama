@@ -1,0 +1,10 @@
+option.SKY_STYLE=Estilo de cielo
+value.SKY_STYLE.0=Normal
+value.SKY_STYLE.1=Aurora
+value.SKY_STYLE.2=Tormenta violeta
+value.SKY_STYLE.3=Fuego
+option.SKY_INTENSITY=Intensidad
+option.LIGHTNING_RATE=Frecuencia de rayos
+option.WORLD_FLASH=Los rayos iluminan el mundo
+value.WORLD_FLASH.0=No
+value.WORLD_FLASH.1=Si
